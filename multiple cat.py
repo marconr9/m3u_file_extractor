@@ -1,5 +1,6 @@
 import os
 
+
 def extract_category_from_m3u(file_path, categories, output_file):
     """
     Extracts URLs from an M3U file by searching for partial matches in the #EXTINF lines
@@ -41,6 +42,7 @@ def extract_category_from_m3u(file_path, categories, output_file):
     except Exception as e:
         print(f"Unexpected error: {e}")
 
+
 # User Input Handling
 file_path = input("Enter the path to the input M3U file: ").strip()
 
@@ -50,8 +52,18 @@ if not file_path.lower().endswith('.m3u'):
 if not os.path.exists(file_path):
     print(f"Error: File '{file_path}' does not exist.")
 else:
-    categories_input = input("Enter categories to filter (comma-separated, e.g., 'rock,pop,jazz'): ").strip()
-    categories = [cat.strip() for cat in categories_input.split(",") if cat.strip()]  # Clean up spaces
+    categories = []
+    while True:
+        category = input("Enter a category to filter (e.g., 'rock', 'pop'): ").strip()
+        if category:
+            categories.append(category)
+        else:
+            print("Invalid input. Please enter a valid category.")
+            continue
+
+        add_more = input("Do you want to add another category? (yes/no): ").strip().lower()
+        if add_more not in ('yes', 'y'):
+            break  # Exit the loop if the user doesn't want to add more categories
 
     if not categories:
         print("Error: No valid categories entered. Exiting.")
