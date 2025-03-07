@@ -1,0 +1,39 @@
+### Summary of the Program:
+
+This Python program is designed to filter and extract specific entries from an M3U playlist file based on a partial match in the **category** described in the `#EXTINF` metadata line. It allows the user to specify both the input M3U file and the output file where the filtered results will be saved. Here's what it can do:
+
+1. **Filter Entries Based on Category**:
+   - The program reads an M3U file and searches for the `#EXTINF` lines (which describe the metadata of each media entry).
+   - It filters these entries based on a **partial category** string provided by the user. For example, the user could filter for all entries with "rock" in the category (e.g., "Music - Rock").
+
+2. **User Input for Files**:
+   - The program prompts the user to:
+     1. **Specify the path to the input M3U file**: If the user doesn't provide the `.m3u` extension, the program will automatically add it.
+     2. **Enter a partial category to filter**: This can be any part of the category text from the `#EXTINF` metadata line (e.g., "rock").
+     3. **Specify the output file name**: If the user doesn't provide the `.m3u` extension, it will automatically be appended.
+
+3. **Save Filtered Results**:
+   - The program processes the M3U file and extracts entries that match the category filter.
+   - It then writes the filtered entries (both metadata and URLs) into a new M3U file specified by the user, ensuring the file has the `.m3u` extension.
+
+4. **Error Handling**:
+   - If the input file is not found, the program notifies the user.
+   - Any other unexpected errors are also captured and displayed.
+
+### Example Scenario:
+1. The user provides the input file path: `playlist.m3u`.
+2. The user enters a partial category like `"rock"`.
+3. The user specifies the output file name: `"rock_streams"`.
+4. The program will filter all entries in the `playlist.m3u` that have "rock" in the category and save them to `rock_streams.m3u`.
+
+### Benefits:
+- **Automatic File Extension Handling**: It automatically adds `.m3u` to both input and output file names if the user forgets to include it.
+- **Flexible Filtering**: The user can search for any partial category string, making it useful for narrowing down specific genres or types of media within an M3U playlist.
+- **Easy-to-Use Interface**: The program uses simple prompts for user input, making it easy for anyone to use without needing to edit the code.
+
+### Example Workflow:
+1. **Input**: `playlist.m3u` (an M3U file with various media entries).
+2. **User Request**: Filter entries containing "rock" in the category and save results to a new file.
+3. **Output**: A new file, `rock_streams.m3u`, containing only the media entries related to "rock."
+
+This program simplifies the task of managing and filtering M3U playlists based on metadata categories, which can be useful for organizing or extracting specific content from large playlist files.
