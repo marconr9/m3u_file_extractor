@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U Filter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold text-center mb-4">M3U File Filter</h2>
+
+        <form id="upload-form" action="/" method="post" enctype="multipart/form-data" class="space-y-4">
+            <div class="border-2 border-dashed border-gray-300 p-6 text-center rounded-lg" id="drop-zone">
+                <p class="text-gray-500">Drag & drop your M3U file here</p>
+                <input type="file" class="hidden" id="m3u_file" name="m3u_file" required>
+                <label for="m3u_file" class="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md mt-2 inline-block">Select File</label>
+            </div>
+            <div>
+                <label for="categories" class="block text-gray-700 font-medium">Enter Categories (comma-separated)</label>
+                <input type="text" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="categories" name="categories" placeholder="e.g. rock, pop" required>
+            </div>
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">Filter & Download</button>
+        </form>
+
+        <div id="progress-container" class="hidden mt-4">
+            <p class="text-center text-gray-600">Processing file...</p>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById("drop-zone");
+        const fileInput = document.getElementById("m3u_file");
+        const form = document.getElementById("upload-form");
+        const progressBar = document.getElementById("progress-bar");
+        const progressContainer = document.getElementById("progress-container");
+
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("bg-blue-100");
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("bg-blue-100");
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("bg-blue-100");
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+            }
+        });
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            progressContainer.classList.remove("hidden");
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                } else {
+                    width += 10;
+                    progressBar.style.width = width + "%";
+                }
+            }, 500);
+
+            fetch("/", {
+                method: "POST",
+                body: new FormData(form)
+            }).then(response => {
+                setTimeout(() => { progressContainer.classList.add("hidden"); }, 2000); // Hide progress bar after completion
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error("Failed to process file");
+            }).then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "filtered_result.m3u";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }).catch(error => {
+                alert(error.message);
+                setTimeout(() => { progressContainer.classList.add("hidden"); }, 2000); // Hide progress on error
+            });
+        });
+    </script>
+</body>
+</html>
+
