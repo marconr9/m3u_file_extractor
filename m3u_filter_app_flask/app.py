@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, after_this_request
 import os
+import time
+import shutil
 
 def extract_category_from_m3u(file_path, categories, output_file):
     extracted_entries = []
@@ -27,8 +29,10 @@ def extract_category_from_m3u(file_path, categories, output_file):
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 RESULT_FOLDER = "results"
+TEMP_FOLDER = "temp"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
+os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -38,9 +42,31 @@ def index():
         if file and categories:
             file_path = os.path.join(UPLOAD_FOLDER, file.filename)
             output_file = os.path.join(RESULT_FOLDER, "filtered_" + file.filename)
+            temp_file = os.path.join(TEMP_FOLDER, "filtered_" + file.filename)
+            
             file.save(file_path)
             extract_category_from_m3u(file_path, categories, output_file)
-            return send_file(output_file, as_attachment=True)
+            
+            # Copy file to a temp location before sending
+            shutil.copy(output_file, temp_file)
+            
+            @after_this_request
+            def cleanup(response):
+                try:
+                    time.sleep(2)  # Ensure the OS releases the file
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    if os.path.exists(output_file):
+                        os.remove(output_file)
+                    for folder in [UPLOAD_FOLDER, RESULT_FOLDER]:
+                        for filename in os.listdir(folder):
+                            if filename.endswith(".m3u"):
+                                os.remove(os.path.join(folder, filename))
+                except Exception as e:
+                    print(f"Cleanup error: {e}")
+                return response
+            
+            return send_file(temp_file, as_attachment=True)
     return render_template("index.html")
 
 if __name__ == "__main__":
